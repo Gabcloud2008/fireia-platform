@@ -1,0 +1,2 @@
+latitude,longitude,scan,track,acq_date,acq_time,satellite,instrument,confidence,version,frp,daynight
+-25.0000,-58.0000,1.0,1.0,2026-09-15,1330,T,MODIS,50,6.03,30.0,D

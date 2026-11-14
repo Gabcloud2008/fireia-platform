@@ -1,0 +1,36 @@
+# ============================================================================
+# Umbrales de control de calidad.
+#   hard  -> el registro NO pasa: va a cuarentena (se conserva, nunca se borra)
+#   soft  -> el registro pasa, pero queda marcado con un flag de calidad
+# Los umbrales "plausibles" son convención configurable del proyecto; no son
+# especificaciones de NASA/FIRMS.
+# ============================================================================
+
+coordinate:
+  # Rangos globales válidos (hard)
+  lat_min: -90.0
+  lat_max: 90.0
+  lon_min: -180.0
+  lon_max: 180.0
+
+frp:
+  min: 0.0                 # hard: FRP negativo es inválido (MW)
+  plausible_max: 5000.0    # soft: por encima se marca implausible_high_frp
+
+brightness:
+  min: 0.0                 # hard para cualquier banda de temperatura (K)
+
+daynight_domain: [D, N]    # hard
+
+confidence:
+  modis_0_100:
+    type: integer
+    min: 0
+    max: 100
+    # Bandas derivadas: convención DEL PROYECTO para filtrado comparativo.
+    # El valor original 0-100 se conserva siempre; esto NO es una definición de FIRMS.
+    bands: { low_max: 30, nominal_max: 80 }
+  viirs_lnh:
+    type: enum
+    values: [l, n, h]
+    bands_map: { l: low, n: nominal, h: high }

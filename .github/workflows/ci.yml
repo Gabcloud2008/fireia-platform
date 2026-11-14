@@ -1,0 +1,95 @@
+# Misión 016 — FIREIA LIVE · CI del repositorio fireia-platform
+# Se dispara en push/PR a main. Validaciones:
+#   pipeline: ruff + suite pytest offline (299+19 esperados)
+#   web:      build de Next.js
+#   supabase: chequeo de sintaxis Deno de las Edge Functions + presencia de migraciones
+#   seguridad: gitleaks (sin secretos en el repo)
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pipeline:
+    name: Pipeline científico (ruff + pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: codigo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: codigo/requirements.lock
+      - name: Instalar dependencias fijadas
+        run: |
+          pip install -r requirements.lock
+          pip install -e .
+      - name: Ruff (src + tests)
+        run: ruff check src tests
+      - name: Suite de pruebas offline (100% sin red)
+        run: python -m pytest -q
+      - name: Verificar manifiestos del almacén de fixtures
+        run: python -m hotspots.cli.app status --data-dir data || echo "almacén de fixtures vacío (esperado en CI)"
+
+  web:
+    name: Web Next.js (build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Instalar dependencias
+        run: bun install --frozen-lockfile
+      - name: Build de producción
+        run: bun run build
+        env:
+          # variables opcionales: el build debe funcionar también sin Supabase
+          NEXT_PUBLIC_SUPABASE_URL: ""
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ""
+          FIREIA_API_BASE: ""
+
+  supabase:
+    name: Supabase (migraciones + funciones)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Chequeo de tipos/sintaxis de Edge Functions
+        run: |
+          for f in supabase/functions/*/index.ts; do
+            echo "→ deno check $f"
+            deno check --quiet "$f" || { echo "FALLO en $f"; exit 1; }
+          done
+      - name: Presencia y orden de migraciones
+        run: |
+          test -d supabase/migrations || { echo "sin directorio de migraciones"; exit 1; }
+          ls supabase/migrations/*.sql | sort
+          grep -l "drop table\|DROP TABLE" supabase/migrations/*.sql && { echo "migración destructiva detectada"; exit 1; } || echo "sin DROP TABLE (ok)"
+
+  seguridad:
+    name: Seguridad (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Escaneo de secretos
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

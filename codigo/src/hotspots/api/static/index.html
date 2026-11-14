@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paraguay Fire Intelligence</title>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<style>
+  :root { --bg:#0e1116; --panel:#161b22; --line:#2d333b; --txt:#e6edf3; --mut:#8b949e;
+          --acc:#f0883e; --acc2:#58a6ff; --warn:#d29922; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--txt); font:14px/1.5 system-ui, sans-serif; }
+  header { display:flex; align-items:center; gap:16px; padding:14px 20px;
+           border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  header h1 { font-size:18px; letter-spacing:.3px; }
+  header h1 span { color:var(--acc); }
+  .banner { background:#3d2c00; color:var(--warn); border:1px solid var(--warn);
+            border-radius:6px; padding:4px 12px; font-size:12px; display:none; }
+  .banner.real { background:#04260f; color:#3fb950; border-color:#3fb950; }
+  main { display:grid; grid-template-columns: 1fr 380px; gap:12px; padding:12px; }
+  @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:8px;
+           padding:12px; }
+  #map { height: 62vh; min-height:420px; border-radius:6px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  select, input { background:var(--bg); color:var(--txt); border:1px solid var(--line);
+                  border-radius:6px; padding:6px 8px; font-size:13px; }
+  .kpi { display:grid; grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); gap:8px; }
+  .kpi .card { background:var(--bg); border:1px solid var(--line); border-radius:6px;
+               padding:8px 10px; }
+  .kpi .num { font-size:20px; font-weight:600; color:var(--acc); }
+  .kpi .lbl { font-size:11px; color:var(--mut); }
+  #cal, #prod { height:200px; }
+  h2 { font-size:13px; text-transform:uppercase; letter-spacing:.8px;
+       color:var(--mut); margin:8px 0 6px; }
+  .note { font-size:11px; color:var(--mut); margin-top:8px; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  td, th { padding:4px 6px; border-bottom:1px solid var(--line); text-align:left; }
+  #obslist { max-height:220px; overflow:auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Paraguay <span>Fire</span> Intelligence</h1>
+  <div style="color:var(--mut); font-size:12px;">MODIS · VIIRS · NASA FIRMS</div>
+  <div class="banner" id="banner"></div>
+  <div style="flex:1"></div>
+  <div style="color:var(--mut); font-size:11px;">punto caliente ≠ incendio confirmado</div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="row">
+      <select id="f-product"><option value="">Todos los productos</option></select>
+      <label style="display:flex;align-items:center;gap:4px;font-size:12px;">
+        <input type="checkbox" id="f-pais" checked> Solo dentro de Paraguay
+      </label>
+      <input type="date" id="f-desde"> <input type="date" id="f-hasta">
+      <button id="btn" style="background:var(--acc);color:#111;border:0;border-radius:6px;
+        padding:6px 14px;font-weight:600;cursor:pointer;">Actualizar</button>
+    </div>
+    <div id="map"></div>
+    <div class="note">La capa de departamentos es la geometría oficial versionada
+      (geoBoundaries gbOpen, CC BY 4.0 — geometría DGEEC). El rectángulo de consulta
+      satelital incluye zona de países vecinos; la pertenencia al país se determina
+      con el polígono, no con el rectángulo.</div>
+  </section>
+
+  <aside>
+    <div class="panel">
+      <h2>Estado</h2>
+      <div class="kpi" id="kpis"></div>
+      <div class="note" id="fuente"></div>
+    </div>
+    <div class="panel" style="margin-top:12px;">
+      <h2>Detecciones por producto</h2>
+      <div id="prod"></div>
+    </div>
+    <div class="panel" style="margin-top:12px;">
+      <h2>Calendario nacional</h2>
+      <div id="cal"></div>
+    </div>
+    <div class="panel" style="margin-top:12px;">
+      <h2>Calidad de datos</h2>
+      <table id="quality"></table>
+    </div>
+    <div class="panel" style="margin-top:12px;">
+      <h2>Observaciones recientes</h2>
+      <table id="obslist"></table>
+    </div>
+  </aside>
+</main>
+
+<script>
+const API = location.origin;
+const $ = id => document.getElementById(id);
+
+async function j(url) {
+  const r = await fetch(url);
+  if (!r.ok) return null;
+  return r.json();
+}
+
+function fmt(n) { return Number(n).toLocaleString('es-PY'); }
+
+let map, deptoLayer = false;
+
+function initMap() {
+  map = new maplibregl.Map({
+    container: 'map',
+    style: { version: 8, sources: {}, layers: [],
+      glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf' },
+    center: [-58.4, -23.4], zoom: 5.4
+  });
+  map.addControl(new maplibregl.NavigationControl());
+}
+
+async function loadDeptos() {
+  const gj = await j(`${API}/api/geo/departamentos`);
+  if (!gj) return;
+  map.addSource('deptos', { type: 'geojson', data: gj });
+  map.addLayer({
+    id: 'deptos-fill', type: 'fill', source: 'deptos',
+    paint: { 'fill-color': '#1f6feb', 'fill-opacity': 0.06 }
+  });
+  map.addLayer({
+    id: 'deptos-line', type: 'line', source: 'deptos',
+    paint: { 'line-color': '#58a6ff', 'line-width': 1 }
+  });
+  deptoLayer = true;
+}
+
+async function loadObs() {
+  const p = new URLSearchParams();
+  if ($('f-product').value) p.set('product', $('f-product').value);
+  if ($('f-pais').checked) p.set('dentro_pais', 'true');
+  if ($('f-desde').value) p.set('date_from', $('f-desde').value);
+  if ($('f-hasta').value) p.set('date_to', $('f-hasta').value);
+  p.set('limit', 500);
+  const page = await j(`${API}/api/observations?${p}`);
+  if (!page) { alert('Sin observaciones: ejecutá una ingesta y geo assign primero'); return; }
+  const fc = { type: 'FeatureCollection', features: page.items.map(o => ({
+    type: 'Feature',
+    properties: { obs_id: o.obs_id, product: o.product, sensor: o.sensor,
+      satellite_name: o.satellite_name, fecha: o.acq_datetime_utc,
+      frp: o.frp, confidence: o.confidence,
+      departamento: o.departamento, dentro_pais: o.dentro_pais },
+    geometry: { type: 'Point', coordinates: [o.longitude, o.latitude] }
+  }))};
+  if (map.getSource('obs')) { map.removeLayer('obs-pts'); map.removeSource('obs'); }
+  map.addSource('obs', { type: 'geojson', data: fc });
+  map.addLayer({
+    id: 'obs-pts', type: 'circle', source: 'obs',
+    paint: {
+      'circle-radius': 5,
+      'circle-color': ['match', ['get','sensor'], 'MODIS', '#f0883e', '#58a6ff'],
+      'circle-stroke-color': '#0e1116', 'circle-stroke-width': 1
+    }
+  });
+  map.on('click', 'obs-pts', e => {
+    const p = e.features[0].properties;
+    new maplibregl.Popup().setHTML(
+      `<b>${p.sensor}</b> · ${p.product}<br>${p.fecha}<br>` +
+      `FRP: ${p.frp} · conf: ${p.confidence}<br>` +
+      `Depto: ${p.departamento ?? '—'} · en PY: ${p.dentro_pais}`
+    ).setLngLat(e.lngLat).addTo(map);
+  });
+  renderObsList(page.items);
+}
+
+function renderObsList(items) {
+  $('obslist').innerHTML = '<tr><th>Fecha</th><th>Sensor</th><th>Satélite</th><th>Depto</th></tr>' +
+    items.slice(0, 30).map(o =>
+      `<tr><td>${(o.acq_datetime_utc || '').replace('T',' ').replace('Z','')}</td>` +
+      `<td>${o.sensor}</td><td>${o.satellite_name}</td>` +
+      `<td>${o.departamento ?? '—'}</td></tr>`).join('');
+}
+
+async function loadHealth() {
+  const h = await j(`${API}/api/health`);
+  if (!h) return;
+  const sint = h.data_source === 'fixture';
+  const b = $('banner');
+  b.style.display = 'inline-block';
+  if (sint) {
+    b.textContent = '⚠ DATOS SINTÉTICOS — almacén cargado con fixtures de prueba, no con datos reales de FIRMS';
+  } else if (h.data_source === 'firms_api') {
+    b.classList.add('real');
+    b.textContent = '● DATOS REALES — ingesta FIRMS';
+  } else if (h.data_source === 'vacio') {
+    b.textContent = 'Almacén vacío';
+  } else {
+    b.textContent = 'Almacén mixto (fixtures + real)';
+  }
+  const nac = h.observaciones_nacionales;
+  $('kpis').innerHTML = `
+    <div class="card"><div class="num">${fmt(nac ?? '—')}</div><div class="lbl">observaciones nacionales</div></div>
+    <div class="card"><div class="num">${fmt(h.observaciones)}</div><div class="lbl">en área de consulta (con vecinos)</div></div>
+    <div class="card"><div class="num">${fmt(h.eventos)}</div><div class="lbl">eventos</div></div>
+    <div class="card"><div class="num">${fmt(h.cuarentena)}</div><div class="lbl">cuarentena</div></div>`;
+  $('fuente').textContent = `geo: ${h.geo_version_activa ?? 'sin capa'} · fuente: ${h.data_source}`;
+}
+
+async function loadProducts() {
+  const resp = await j(`${API}/api/statistics?by=product&scope=nacional`);
+  if (!resp) return;
+  const st = resp.datos;
+  if (!st) return;
+  for (const r of st) {
+    const o = document.createElement('option');
+    o.value = r.product; o.textContent = `${r.product} (${fmt(r.detecciones)})`;
+    $('f-product').appendChild(o);
+  }
+  const chart = echarts.init($('prod'));
+  chart.setOption({
+    grid: { left: 110, right: 20, top: 10, bottom: 24 },
+    xAxis: { type: 'value', axisLabel: { color: '#8b949e' } },
+    yAxis: { type: 'category', data: st.map(r => r.product),
+             axisLabel: { color: '#e6edf3', fontSize: 11 } },
+    series: [{ type: 'bar', data: st.map(r => r.detecciones),
+               itemStyle: { color: '#f0883e' }, barWidth: 14 }],
+    tooltip: { trigger: 'axis' }
+  });
+}
+
+async function loadCalendar() {
+  const resp = await j(`${API}/api/calendar?granularity=dia`);
+  if (!resp || !resp.datos || !resp.datos.length) return;
+  const cal = resp.datos;
+  const porFecha = {};
+  for (const r of cal) {
+    const k = r.acq_date ?? r.semana ?? r.mes;
+    porFecha[k] = (porFecha[k] || 0) + r.detecciones;
+  }
+  const fechas = Object.keys(porFecha).sort();
+  const chart = echarts.init($('cal'));
+  chart.setOption({
+    grid: { left: 40, right: 10, top: 10, bottom: 24 },
+    xAxis: { type: 'category', data: fechas, axisLabel: { color: '#8b949e', fontSize: 10 } },
+    yAxis: { type: 'value', axisLabel: { color: '#8b949e' } },
+    series: [{ type: 'line', data: fechas.map(f => porFecha[f]),
+               smooth: true, lineStyle: { color: '#58a6ff' },
+               areaStyle: { color: 'rgba(88,166,255,.15)' } }],
+    tooltip: { trigger: 'axis' }
+  });
+}
+
+async function loadQuality() {
+  const q = await j(`${API}/api/quality`);
+  if (!q) return;
+  let html = `<tr><td>Origen de datos</td><td>${q.data_source}</td></tr>
+              <tr><td>Manifiestos</td><td>${fmt(q.manifiestos)}</td></tr>
+              <tr><td>Pares candidatos</td><td>${fmt(q.pares_candidatos)}</td></tr>`;
+  for (const e of q.estados_ingesta) {
+    html += `<tr><td>${e.state}</td><td>${fmt(e.n)}</td></tr>`;
+  }
+  $('quality').innerHTML = html;
+}
+
+initMap();
+map.on('load', async () => {
+  await loadDeptos();
+  await Promise.all([loadHealth(), loadProducts(), loadCalendar(), loadQuality()]);
+  await loadObs();
+});
+$('btn').onclick = () => loadObs();
+</script>
+</body>
+</html>

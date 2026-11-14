@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hotspots-paraguay"
+version = "0.1.0"
+description = "Ingesta, validacion y almacenamiento analitico de focos de calor MODIS/VIIRS (NASA FIRMS) - caso Paraguay"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Equipo Harmonization of MODIS and VIIRS Hot Spots" }]
+dependencies = [
+    "requests>=2.31,<3",
+    "python-dotenv>=1.0,<2",
+    "PyYAML>=6,<7",
+    "duckdb>=1.0,<3",
+    "pyarrow>=15,<27",
+    "shapely>=2.0,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+    # pytest: el rango admite 8.x y 9.x porque el lock y la suite se verifican
+    # con 9.2.0 (Misión 007: pyproject exigía <9 mientras el lock fijaba 9.2.0).
+    "pytest>=8,<10",
+    # httpx: requerido por starlette.testclient para las pruebas de la API.
+    "httpx>=0.27,<1",
+    "ruff>=0.6",
+]
+api = [
+    "fastapi>=0.110,<1",
+    "uvicorn>=0.29,<1",
+    "pydantic>=2.5,<3",
+]
+
+[project.scripts]
+hotspots = "hotspots.cli.app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

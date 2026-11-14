@@ -1,0 +1,46 @@
+# Secretos y entornos — NUNCA al repo
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Datos y bases (los datos viven en HF/R2, no en git)
+*.duckdb
+*.duckdb.wal
+*.parquet
+*.joblib
+codigo/data/raw/*
+codigo/data/processed/*
+codigo/data/manifests/*
+codigo/data/geo/*
+codigo/data/capas/*
+codigo/data/experiments/*
+!codigo/data/**/.gitkeep
+datos_run/
+
+# Web
+web/node_modules/
+web/.next/
+web/out/
+web/*.tsbuildinfo
+web/fireia-web-codigo-*.zip
+next-env.d.ts
+
+# Supabase
+supabase/.branches
+supabase/.temp
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.log

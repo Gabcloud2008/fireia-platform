@@ -1,0 +1,820 @@
+{
+ "experimento": "exp_001_anomalias_sinteticas",
+ "datos": "SINTETICOS (generador con semilla fija; no representan Paraguay)",
+ "metodo": "rolling_median_mad_v1",
+ "umbral_z": 3.0,
+ "dias_evaluados": 31,
+ "anomalias_inyectadas": [
+  "2026-03-05",
+  "2026-03-12",
+  "2026-03-18",
+  "2026-03-24"
+ ],
+ "anomalias_detectadas": [
+  "2026-03-05",
+  "2026-03-12",
+  "2026-03-18",
+  "2026-03-24"
+ ],
+ "verdaderos_positivos": 4,
+ "falsos_positivos": 0,
+ "recall": 1.0,
+ "precision": 1.0,
+ "mae_persistencia_baseline": 70.71,
+ "detalle": [
+  {
+   "fecha": "2026-03-05",
+   "valor": 360,
+   "esperado": 43.0,
+   "z": 85.53,
+   "direccion": "alto",
+   "es_anomalia": true,
+   "inyectada": true
+  },
+  {
+   "fecha": "2026-03-12",
+   "valor": 400,
+   "esperado": 44.0,
+   "z": 96.05,
+   "direccion": "alto",
+   "es_anomalia": true,
+   "inyectada": true
+  },
+  {
+   "fecha": "2026-03-18",
+   "valor": 2,
+   "esperado": 42.5,
+   "z": -10.93,
+   "direccion": "bajo",
+   "es_anomalia": true,
+   "inyectada": true
+  },
+  {
+   "fecha": "2026-03-24",
+   "valor": 340,
+   "esperado": 40.0,
+   "z": 80.94,
+   "direccion": "alto",
+   "es_anomalia": true,
+   "inyectada": true
+  }
+ ],
+ "serie_completa": [
+  {
+   "fecha": "2025-11-01",
+   "valor": 58,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-02",
+   "valor": 48,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-03",
+   "valor": 39,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-04",
+   "valor": 38,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-05",
+   "valor": 46,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-06",
+   "valor": 42,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-07",
+   "valor": 42,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-08",
+   "valor": 59,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-09",
+   "valor": 57,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-10",
+   "valor": 44,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-11",
+   "valor": 38,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-12",
+   "valor": 41,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-13",
+   "valor": 41,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-14",
+   "valor": 49,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-15",
+   "valor": 50,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-16",
+   "valor": 44,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-17",
+   "valor": 36,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-18",
+   "valor": 38,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-19",
+   "valor": 41,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-20",
+   "valor": 39,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-21",
+   "valor": 37,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-22",
+   "valor": 59,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-23",
+   "valor": 52,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-24",
+   "valor": 34,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-25",
+   "valor": 42,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-26",
+   "valor": 48,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-27",
+   "valor": 47,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-28",
+   "valor": 50,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-29",
+   "valor": 63,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-11-30",
+   "valor": 53,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-01",
+   "valor": 41,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-02",
+   "valor": 37,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-03",
+   "valor": 42,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-04",
+   "valor": 49,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-05",
+   "valor": 49,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-06",
+   "valor": 63,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-07",
+   "valor": 49,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-08",
+   "valor": 43,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-09",
+   "valor": 36,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-10",
+   "valor": 39,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-11",
+   "valor": 40,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-12",
+   "valor": 44,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-13",
+   "valor": 53,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-14",
+   "valor": 46,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-15",
+   "valor": 42,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-16",
+   "valor": 43,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-17",
+   "valor": 41,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-18",
+   "valor": 41,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-19",
+   "valor": 41,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-20",
+   "valor": 53,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-21",
+   "valor": 53,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-22",
+   "valor": 46,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-23",
+   "valor": 39,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-24",
+   "valor": 37,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-25",
+   "valor": 47,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-26",
+   "valor": 44,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-27",
+   "valor": 56,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-28",
+   "valor": 57,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-29",
+   "valor": 37,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-30",
+   "valor": 37,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2025-12-31",
+   "valor": 39,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-01",
+   "valor": 49,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-02",
+   "valor": 46,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-03",
+   "valor": 57,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-04",
+   "valor": 53,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-05",
+   "valor": 36,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-06",
+   "valor": 33,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-07",
+   "valor": 34,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-08",
+   "valor": 40,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-09",
+   "valor": 44,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-10",
+   "valor": 54,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-11",
+   "valor": 51,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-12",
+   "valor": 43,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-13",
+   "valor": 34,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-14",
+   "valor": 40,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-15",
+   "valor": 35,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-16",
+   "valor": 46,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-17",
+   "valor": 61,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-18",
+   "valor": 43,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-19",
+   "valor": 40,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-20",
+   "valor": 40,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-21",
+   "valor": 36,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-22",
+   "valor": 44,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-23",
+   "valor": 47,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-24",
+   "valor": 56,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-25",
+   "valor": 44,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-26",
+   "valor": 42,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-27",
+   "valor": 39,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-28",
+   "valor": 40,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-29",
+   "valor": 40,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-30",
+   "valor": 47,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-01-31",
+   "valor": 57,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-01",
+   "valor": 57,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-02",
+   "valor": 45,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-03",
+   "valor": 41,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-04",
+   "valor": 42,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-05",
+   "valor": 42,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-06",
+   "valor": 52,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-07",
+   "valor": 56,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-08",
+   "valor": 53,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-09",
+   "valor": 42,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-10",
+   "valor": 42,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-11",
+   "valor": 49,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-12",
+   "valor": 51,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-13",
+   "valor": 41,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-14",
+   "valor": 57,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-15",
+   "valor": 51,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-16",
+   "valor": 45,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-17",
+   "valor": 37,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-18",
+   "valor": 47,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-19",
+   "valor": 46,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-20",
+   "valor": 43,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-21",
+   "valor": 60,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-22",
+   "valor": 55,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-23",
+   "valor": 41,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-24",
+   "valor": 35,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-25",
+   "valor": 40,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-26",
+   "valor": 44,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-27",
+   "valor": 49,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-02-28",
+   "valor": 54,
+   "en_evaluacion": false
+  },
+  {
+   "fecha": "2026-03-01",
+   "valor": 56,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-02",
+   "valor": 40,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-03",
+   "valor": 41,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-04",
+   "valor": 43,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-05",
+   "valor": 360,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-06",
+   "valor": 43,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-07",
+   "valor": 49,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-08",
+   "valor": 45,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-09",
+   "valor": 41,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-10",
+   "valor": 38,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-11",
+   "valor": 45,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-12",
+   "valor": 400,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-13",
+   "valor": 45,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-14",
+   "valor": 58,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-15",
+   "valor": 58,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-16",
+   "valor": 40,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-17",
+   "valor": 44,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-18",
+   "valor": 2,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-19",
+   "valor": 52,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-20",
+   "valor": 42,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-21",
+   "valor": 55,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-22",
+   "valor": 50,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-23",
+   "valor": 39,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-24",
+   "valor": 340,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-25",
+   "valor": 42,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-26",
+   "valor": 39,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-27",
+   "valor": 48,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-28",
+   "valor": 55,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-29",
+   "valor": 46,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-30",
+   "valor": 36,
+   "en_evaluacion": true
+  },
+  {
+   "fecha": "2026-03-31",
+   "valor": 36,
+   "en_evaluacion": true
+  }
+ ],
+ "nota": "El recall/precision aplica SOLO a la serie sintética. La persistencia queda como baseline a vencer cuando existan modelos reales; su MAE también es sintético."
+}

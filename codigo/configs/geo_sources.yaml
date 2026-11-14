@@ -1,0 +1,136 @@
+# ============================================================================
+# REGISTRO CARTOGRÁFICO VERSIONADO (Misión 005, §3.2)
+#
+# Cada versión de límites usada por la plataforma queda fichada acá con su
+# procedencia completa. Esto NO sustituye a los manifiestos SHA256 ni a los
+# archivos fuente en data/geo/<version>/source/: es la capa legible que
+# responde "¿qué geometría es esta, de qué año, para qué sirve y qué NO es?".
+#
+# Distinción de carácter (¡leer antes de citar la capa!):
+#   estadistico              -> construida para operativos censales/encuestas
+#   administrativo_referencia -> referencia de la DPA; sin efecto legal pleno
+#   catastral                -> parcelaria (SNC); NO es límite distrital
+#   legal                    -> con respaldo documental suficiente
+#
+# VERIFICACIÓN DE METADATOS (2026-11-11):
+#   - geoBoundaries API: geoboundaries.org/api/current/gbOpen/PRY/ADM2/
+#   - INE Revisión 2025: ine.gov.py/resumen/284 (proyecciones distritales)
+#   - SNC: catastro.gov.py (Estudio de límites distritales V2023)
+# ============================================================================
+
+fuentes:
+  - version: geoboundaries-gbOpen-PRY-9469f09
+    institucion: "DGEEC (Dirección General de Estadística, Encuestas y Censos, Paraguay), redistribuida por geoBoundaries (William & Mary geoLab)"
+    fuente: "geoBoundaries gbOpen PRY — boundarySourceURL: geo.stp.gov.py/user/dgeec/tables/paraguay_2012_barrios_y_localidades/public"
+    url_consulta: "https://www.geoboundaries.org/api/current/gbOpen/PRY/ADM2/"
+    url_descarga: "https://github.com/wmgeolab/geoBoundaries/raw/f549eab/releaseData/gbOpen/PRY/ADM2/geoBoundaries-PRY-ADM2-all.zip"
+    anio_representado: 2012
+    build_fuente: "2023-12-12 (buildDate geoBoundaries; sourceDataUpdateDate 2023-10-26)"
+    fecha_descarga: "2026-11-10"
+    fecha_incorporacion: "2026-11-10"
+    licencia: "CC BY 4.0 (geoBoundaries gbOpen)"
+    citacion: "geoBoundaries (William & Mary geoLab). https://www.geoboundaries.org"
+    sha256:
+      ADM0: bd59339058c2d8a7acb31119076899723709d874b051cc06a2a8e88dfa99b265
+      ADM1: 82173f047c41db35fe12651e42ea5f5ed442a538247a4082a4f7edf090e6daab
+      ADM2: 78b4c14985718dbfcc4c3889f231d415c8a279727d0f8b280c84d434b4bb0e4d
+    estado: historica
+    estado_nota: "HISTÓRICA desde la Misión 007 (2026-11-11): active_version.txt señala ine2022-codab-hdx. Reactivable para reproducibilidad con 'hotspots geo activate --version geoboundaries-gbOpen-PRY-9469f09'; sus asignaciones obs_geo versionadas siguen siendo reproducibles."
+    estado_validacion: "conteos validados (ADM0=1, ADM1=18, ADM2=247); auditoría geométrica vía 'hotspots geo audit'"
+    caracter: estadistico
+    niveles: [ADM0, ADM1, ADM2]
+    conteos: {ADM0: 1, ADM1: 18, ADM2: 247}
+    limitaciones:
+      - "Representa la DPA al año 2012: NO incluye los distritos creados después (el INE Revisión 2025 registra 263; ver docs/cartografia.md)."
+      - "La propia INE describe su cartografía como 'meramente referencial' para operativos estadísticos."
+      - "El enlace distrito→departamento NO viene en la fuente: se deriva espacialmente (punto representativo) y queda marcado como padre_derivado."
+      - "La geometría original proviene de una capa de barrios y localidades de 2012 (según boundarySourceURL), adaptada por geoBoundaries a ADM2."
+      - "NO son límites con efecto legal pleno ni límites catastrales."
+
+  - version: ine-revision-2025
+    institucion: "INE (Instituto Nacional de Estadística, Paraguay)"
+    fuente: "Estimaciones y proyecciones de la población distrital 2000-2035, Revisión 2025 — 263 distritos incluyendo Asunción"
+    url_consulta: "https://www.ine.gov.py/resumen/284/estimaciones-y-proyecciones-de-la-poblacion-distrital-2000-2035-revision-2025"
+    anio_representado: 2025
+    fecha_descarga: null
+    fecha_incorporacion: null
+    licencia: "Licencia de Uso de la Información Pública del Gobierno Paraguayo (cartografía INE)"
+    sha256: null
+    estado: no_incorporada
+    estado_validacion: "pendiente: requiere descarga de la cartografía oficial (autorización pendiente según restricciones de la misión)"
+    caracter: estadistico
+    niveles: [ADM0, ADM1, ADM2]
+    conteos: {ADM0: 1, ADM1: 18, ADM2: 263}
+    limitaciones:
+      - "Referencia estadística oficial vigente (263 distritos), pero la geometría aún no fue descargada ni validada."
+      - "La discrepancia 263-247=16 unidades corresponde a creaciones de municipios posteriores a 2012; 9 están documentadas con fecha/ley en docs/cartografia.md."
+      - "La incorporación exige: descargar la capa oficial, recalcular hashes, validar conteos y geometrías, y REASIGNAR obs_geo en una versión nueva (nunca sobrescribir la 9469f09)."
+
+  - version: ine-cartografia-digital-2022
+    institucion: "INE (Instituto Nacional de Estadística, Paraguay)"
+    fuente: "Cartografía Digital 2022 del CNPV — capa censal oficial de departamentos, distritos, barrios/localidades, manzanas y vías"
+    url_consulta: "https://www.ine.gov.py/microdatos/cartografia-digital-2022.php"
+    url_descarga: "https://www.ine.gov.py/microdatos/cartografia-digital-2022.php (enlaces 'Total País' por formato; verificados 2026-11-11)"
+    anio_representado: 2022
+    fecha_descarga: null
+    fecha_incorporacion: null
+    licencia: "Licencia de Uso de la Información Pública del Gobierno Paraguayo (enlazada en la propia página de descarga)"
+    sha256: null
+    estado: documentada
+    estado_validacion: "descarga directa BLOQUEADA desde el entorno del proyecto (DNS de ine.gov.py inalcanzable; Misión 007). La geometría INE 2022 se incorporó vía la redistribución oficial OCHA COD-AB (ver ficha ine2022-codab-hdx), que declara como productor a DGEEC/INE y vintage 2022-01-01."
+    caracter: estadistico
+    niveles: [ADM0, ADM1, ADM2]
+    conteos: {ADM2: null}  # por verificar al descargar (referencia INE vigente: 263)
+    limitaciones:
+      - "La propia INE declara el trazado 'meramente referencial', hecho para operativos estadísticos (texto de la página oficial)."
+      - "Es la capa que debería reflejar la DPA del CNPV 2022 (los documentos oficiales de la época hablan de 262-263 distritos); el conteo exacto de la capa debe verificarse tras la descarga, NO asumirse."
+      - "Cómo se construyó: los distritos sin documentación difusa se delinearon por límites históricos del INE (presentación CEPAL/INE, oct-2023: cepal.org/sites/default/files/presentations/cartografia-para-cnpv2022-paraguay-ine-oct2023.pdf)."
+      - "Los enlaces de descarga de la página INE no son anchors estáticos (JS); el acceso directo requiere navegador. La vía COD-AB queda como canal de redistribución oficial de la misma geometría."
+
+  - version: ine2022-codab-hdx
+    institucion: "INE / DGEEC (Instituto Nacional de Estadística, Dirección General de Estadística, Encuestas y Censos, Paraguay) — productor; OCHA Field Information Services Section (FISS) — redistribución"
+    fuente: "Paraguay - Subnational Administrative Boundaries (COD-AB) v01, dataset version 01, HDX: data.humdata.org/dataset/cod-ab-pry. Redistribución oficial OCHA de la cartografía INE 2022 (productor declarado: DGEEC/INE; vintage de límites: 2022-01-01; revisión de exactitud: 2026-07-09; válida para uso humanitario: 2026-07-29; última modificación del recurso: 2026-09-24)"
+    url_consulta: "https://data.humdata.org/dataset/cod-ab-pry"
+    url_descarga: "https://data.humdata.org/dataset/212cd82f-bcb8-445f-8b32-aa194387f6c3/resource/9d74ce1f-40d9-488b-8e7c-b710c1997f01/download/pry_admin_boundaries.geojson.zip"
+    manifest_source: ine_codab_hdx
+    anio_representado: 2022
+    fecha_descarga: "2026-11-11"
+    fecha_incorporacion: "2026-11-11"
+    licencia: "CC BY-IGO (Creative Commons Attribution for Intergovernmental Organisations, redistribución OCHA). El productor original (INE) publica bajo la Licencia de Uso de la Información Pública del Gobierno Paraguayo."
+    sha256:
+      zip_geojson: 70d7eb4581a616e8b71a4d538f7fb56d313c42dedf0d7fa8ebd83dc94302800b
+      zip_shp: a217b1be2b88b298a6e5779f95fc4bf6ba449a48c105545dfb3198f5e66cb673
+      ADM0: 74195f99597548908f0c5a588857e7af3771e522801f7fdd4b931c0a60313443
+      ADM1: d24bf42dcf0efb830287fbdc62c1b986eea8fcde4e653127c5920ef67181744a
+      ADM2: f80e9efce1bf8e93e13b516d0b325c204700964a50d9239be0892c2b814bec8e
+    estado: activa
+    estado_nota: "ÚNICA capa activa (Misión 007/008): coincide con data/geo/active_version.txt. Redistribución OCHA COD-AB de la cartografía censal INE 2022 — NO es el zip original del INE (ver ficha ine-cartografia-digital-2022, que documenta el canal original y su bloqueo de descarga)."
+    estado_validacion: "conteos verificados sobre los archivos descargados (ADM0=1, ADM1=18, ADM2=263; pcodes únicos; sin nombres nulos; jerarquía adm1_name de los 263 distritos resuelta al 100%); auditoría geométrica vía 'hotspots geo audit'; padres explícitos verificados espacialmente"
+    caracter: estadistico
+    niveles: [ADM0, ADM1, ADM2]
+    conteos: {ADM0: 1, ADM1: 18, ADM2: 263}
+    campos_fuente: "adm{N}_name / adm{N}_pcode (pcode OCHA basado en el sistema nacional, p. ej. PY0000=Asunción); padre explícito adm1_name; valid_on=2026-07-29; version=v01"
+    limitaciones:
+      - "Redistribución OCHA COD-AB de la cartografía censal INE 2022: NO es el zip original del INE (su descarga directa está bloqueada desde el entorno; ver ficha ine-cartografia-digital-2022). OCHA declara al INE/DGEEC como productor y vintage 2022-01-01."
+      - "La propia INE describe su cartografía como 'meramente referencial' para operativos estadísticos: NO es delimitación legal ni catastral."
+      - "El nivel ADM2 tiene 263 distritos (verificado), coherente con la referencia INE Revisión 2025; NO debe confundirse con la capa 2012 (247) ni mezclarse con ella en una misma estadística."
+      - "El zip incluye además ADM3 (7994 barrios/localidades) y ADM4 (105952 manzanas, cobertura parcial) NO incorporados al pipeline (fuera del alcance actual); los hashes corresponden al zip completo y a los tres niveles fuente usados."
+      - "COD-AB declara P-codes adaptados a estándares OCHA a partir del sistema nacional: verificar correspondencia exacta con los códigos INE crudos antes de usarlos como clave legal."
+
+  - version: snc-limite-distrital-referencial
+    institucion: "SNC (Servicio Nacional de Catastro, Paraguay)"
+    fuente: "Estudio de límites distritales de la República del Paraguay (V2023, publicado 2024)"
+    url_consulta: "https://www.catastro.gov.py/public/3c5e5b_Limites%20Republica%20Paraguay_V2023.pdf"
+    anio_representado: 2023
+    fecha_descarga: null
+    fecha_incorporacion: null
+    licencia: "por verificar al momento de uso"
+    sha256: null
+    estado: documentada
+    estado_validacion: "documento de referencia consultado (2026-11-11); geometría no incorporada"
+    caracter: administrativo_referencia
+    niveles: [ADM2]
+    conteos: {ADM2: 263}
+    limitaciones:
+      - "Estudio normativo/jurídico sobre límites distritales: documenta el marco legal y menciona los 263 distritos."
+      - "Los límites distritales en Paraguay adolecen de imprecisión normativa reconocida (el propio estudio lo desarrolla); NO tratar ninguna capa como frontera legal definitiva."

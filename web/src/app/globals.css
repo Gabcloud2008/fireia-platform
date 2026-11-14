@@ -1,0 +1,293 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-fraunces);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  /* Identidad FIREIA — Premium Geospatial Intelligence (M012) */
+  --color-modis: #d97c45;
+  --color-modis-deep: #8a4516;
+  --color-viirs: #3e8e87;
+  --color-viirs-deep: #1f5450;
+  --color-flame: #c05f2c;
+  --color-action: #c05f2c;
+  --color-tint: #f7e3d2;
+  --color-brown: #6b5d52;
+}
+
+/*
+ * Tema FIREIA — exclusivamente claro (M012).
+ * Blanco #FFFFFF · crema #FFF9F3 · beige #F4EAE0 · naranja pastel #E9A477
+ * naranja intenso #C05F2C SOLO para acciones importantes.
+ * Tokens de movimiento: escala de duración con intención + easings.
+ */
+:root {
+  --radius: 0.75rem;
+  --background: #fff9f3;
+  --foreground: #39332f;
+  --card: #ffffff;
+  --card-foreground: #39332f;
+  --popover: #ffffff;
+  --popover-foreground: #39332f;
+  --primary: #e9a477;
+  --primary-foreground: #39332f;
+  --secondary: #f4eae0;
+  --secondary-foreground: #39332f;
+  --muted: #f4eae0;
+  --muted-foreground: #82766d;
+  --accent: #f4c5a5;
+  --accent-foreground: #39332f;
+  --destructive: #b5543b;
+  --border: #ecdfd1;
+  --input: #ecdfd1;
+  --ring: #e9a477;
+  --chart-1: #e9a477;
+  --chart-2: #3e8e87;
+  --chart-3: #c97b4a;
+  --chart-4: #82766d;
+  --chart-5: #d9bfa8;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #39332f;
+  --sidebar-primary: #e9a477;
+  --sidebar-primary-foreground: #39332f;
+  --sidebar-accent: #f4eae0;
+  --sidebar-accent-foreground: #39332f;
+  --sidebar-border: #ecdfd1;
+  --sidebar-ring: #e9a477;
+
+  /* Escala de duración (adaptada de motion-web/motion-tokens) */
+  --m-instant: 90ms; /* feedback de cursor, tooltip */
+  --m-fast: 170ms; /* hover, botón activo, toggle */
+  --m-standard: 300ms; /* panel, drawer, tarjeta */
+  --m-medium: 450ms; /* revelado de sección */
+  --m-slow: 650ms; /* entrada de página */
+
+  /* Easings */
+  --e-out-expo: cubic-bezier(0.16, 1, 0.3, 1); /* revelados por defecto */
+  --e-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --e-out-back: cubic-bezier(0.34, 1.56, 0.64, 1); /* aterrizajes juguetones */
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "cv11";
+  }
+  ::selection {
+    background-color: #f4c5a5;
+    color: #39332f;
+  }
+}
+
+/* Microinteracción táctil global: depresión sutil al presionar controles */
+button:not(:disabled),
+[role="switch"],
+[role="button"]:not(:disabled) {
+  transition: transform var(--m-fast) var(--e-out-expo);
+}
+button:not(:disabled):active,
+[role="switch"]:active,
+[role="button"]:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+/* Scrollbar discreto, tono cálido */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #e4d5c6 transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: #e4d5c6;
+  border-radius: 9999px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Popups de MapLibre adaptados al tema claro */
+.maplibregl-popup-content {
+  border-radius: 12px;
+  border: 1px solid #ecdfd1;
+  box-shadow: 0 10px 28px rgb(57 51 47 / 0.12);
+  padding: 12px 14px;
+}
+.maplibregl-popup-close-button {
+  color: #82766d;
+  font-size: 16px;
+  padding: 2px 7px;
+}
+.maplibregl-ctrl-attrib.maplibregl-compact {
+  border-radius: 8px;
+}
+
+/* Transición suave al cambiar de vista FIREIA */
+@keyframes fireia-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fireia-view {
+  animation: fireia-fade-in var(--m-standard) var(--e-out-expo);
+}
+
+/* Pulso discreto para indicadores en vivo */
+@keyframes fireia-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+.fireia-pulse {
+  animation: fireia-pulse 2.4s var(--e-in-out-quart) infinite;
+}
+
+/* Entrada escalonada de elementos (usada con --i por elemento) */
+@keyframes fireia-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fireia-rise {
+  animation: fireia-rise var(--m-medium) var(--e-out-expo) both;
+  animation-delay: calc(sibling-index() * 70ms);
+}
+
+/* ---------- Sistema editorial FIREIA (v3) ---------- */
+
+/* Retícula de puntos cálida para escenarios/hero */
+.fireia-dots {
+  background-image: radial-gradient(#e0cdb9 1.1px, transparent 1.1px);
+  background-size: 22px 22px;
+}
+
+/* Brillo radial naranja muy suave (sin gradientes decorativos fuertes) */
+.fireia-glow {
+  background:
+    radial-gradient(560px 300px at 82% 8%, rgb(233 164 119 / 0.16), transparent 68%),
+    radial-gradient(420px 260px at 8% 92%, rgb(244 197 165 / 0.14), transparent 70%);
+}
+
+/* Kicker editorial: rótulo pequeño en mayúsculas con tracking amplio */
+.fireia-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* Ticker de actividad (marquee) */
+@keyframes fireia-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.fireia-marquee {
+  display: flex;
+  width: max-content;
+  animation: fireia-marquee var(--marquee-duration, 46s) linear infinite;
+}
+.fireia-marquee:hover {
+  animation-play-state: paused;
+}
+.fireia-marquee-mask {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 6%,
+    black 94%,
+    transparent
+  );
+}
+
+/* Números de índice editoriales (01, 02, …) en Fraunces */
+.fireia-index {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 72, "SOFT" 60, "WONK" 1;
+  font-feature-settings: normal;
+  line-height: 1;
+}
+
+/* Papel del informe: hoja blanca con sombra cálida muy leve */
+.fireia-paper {
+  box-shadow:
+    0 1px 2px rgb(57 51 47 / 0.05),
+    0 12px 32px -12px rgb(57 51 47 / 0.14);
+}
+
+/* Veladura cálida para escenarios destacados */
+.fireia-stage {
+  background: linear-gradient(180deg, #fffdfb 0%, #fff7ee 100%);
+}
+
+/* Respeto total a prefers-reduced-motion: experiencia completa sin movimiento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

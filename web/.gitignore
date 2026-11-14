@@ -1,0 +1,9 @@
+# (heredado del proyecto) dependencias y artefactos
+node_modules
+.next
+out
+build
+*.log
+.env
+.env.*
+!.env.example

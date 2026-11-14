@@ -1,0 +1,119 @@
+# Misión 016 — FIREIA LIVE · Workflow de ingesta
+# Se dispara por workflow_dispatch (desde Supabase Edge Function
+# fireia-dispatch-ingestion, llamada por Supabase Cron) o manualmente.
+# Concurrencia: UNA ingesta a la vez por producto (evita escrituras simultáneas).
+# Modos:
+#   fixture — pipeline completo con fixture sintético etiquetado (validación E2E
+#             de la cadena sin consumir FIRMS; marca modo='fixture' en Supabase)
+#   real    — adquisición REAL desde NASA FIRMS (requiere FIRMS_MAP_KEY) con
+#             compuerta --allow-network y área 'py' (Paraguay)
+name: Ingesta FIREIA
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "ID de la corrida registrada en Supabase (fireia_ingestion_runs)"
+        required: false
+        default: ""
+      modo:
+        description: "fixture | real"
+        required: true
+        default: "fixture"
+      product:
+        description: "Producto FIRMS (vacío = VIIRS_NOAA20_NRT)"
+        required: false
+        default: "VIIRS_NOAA20_NRT"
+      fecha:
+        description: "YYYY-MM-DD (vacío = más reciente)"
+        required: false
+        default: ""
+
+concurrency:
+  group: fireia-ingesta-${{ inputs.product || 'VIIRS_NOAA20_NRT' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  PRODUCTO: ${{ inputs.product || 'VIIRS_NOAA20_NRT' }}
+  MODO: ${{ inputs.modo }}
+
+jobs:
+  ingesta:
+    name: Ingesta ${{ inputs.modo }} · ${{ inputs.product || 'VIIRS_NOAA20_NRT' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: codigo
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: codigo/requirements.lock
+
+      - name: Instalar pipeline
+        run: |
+          pip install -r requirements.lock
+          pip install -e .
+
+      - name: Marcar corrida como 'ejecutando' en Supabase
+        if: ${{ inputs.run_id != '' }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RUN_ID: ${{ inputs.run_id }}
+        run: |
+          python ../scripts/reportar_run_supabase.py estado \
+            --run-id "$RUN_ID" --estado ejecutando --pipeline-version "$(python -m hotspots.cli.app --version 2>/dev/null || echo unknown)"
+
+      - name: Ingesta (fixture sintético etiquetado)
+        if: ${{ env.MODO == 'fixture' }}
+        run: |
+          python -m hotspots.cli.app ingest \
+            --fixture tests/fixtures/synthetic_viirs_noaa20_nrt.csv \
+            --product "$PRODUCTO" \
+            --data-dir "$GITHUB_WORKSPACE/datos_run"
+
+      - name: Ingesta REAL desde NASA FIRMS (área Paraguay)
+        if: ${{ env.MODO == 'real' }}
+        env:
+          FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+        run: |
+          ARGS=(--source firms-api --product "$PRODUCTO" --area py --day-range 1 --allow-network --data-dir "$GITHUB_WORKSPACE/datos_run")
+          if [ -n "${{ inputs.fecha }}" ]; then ARGS+=(--date "${{ inputs.fecha }}"); fi
+          python -m hotspots.cli.app ingest "${ARGS[@]}"
+
+      - name: Verificar integridad del almacén (manifiestos vs artefactos)
+        run: python -m hotspots.cli.app verify --data-dir "$GITHUB_WORKSPACE/datos_run"
+
+      - name: Reportar resultado a Supabase (corrida, cobertura, assets, detecciones, alertas)
+        if: ${{ always() && inputs.run_id != '' }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RUN_ID: ${{ inputs.run_id }}
+          FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+        run: |
+          python ../scripts/reportar_run_supabase.py run \
+            --run-id "$RUN_ID" \
+            --data-dir "$GITHUB_WORKSPACE/datos_run" \
+            --product "$PRODUCTO" \
+            --modo "$MODO" \
+            --workflow-run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --resultado "${{ job.status }}"
+
+      - name: Subir evidencia (RAW + Parquet + manifiestos + DuckDB)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: fireia-ingesta-${{ env.MODO }}-${{ env.PRODUCTO }}-${{ github.run_id }}
+          path: |
+            datos_run/
+          retention-days: 90
+          if-no-files-found: error

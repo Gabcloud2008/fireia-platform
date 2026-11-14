@@ -1,0 +1,227 @@
+# ============================================================================
+# REGISTRO DE FUENTES AMBIENTALES VERSIONADO (Misión 006, Objetivo D)
+#
+# Fichas de las variables ambientales candidatas para dar contexto a las
+# observaciones MODIS/VIIRS. Investigación verificada el 2026-11-11 contra
+# las páginas oficiales de cada fuente (URL y fecha en cada ficha).
+#
+# Estados:
+#   investigada  -> ficha completa, nada descargado/integrado
+#   preparada    -> comando/procedimiento listo, pendiente de autorización
+#   integrada    -> usada por el pipeline (ninguna todavía: Fase real bloqueada)
+#
+# Regla de asociación (src/hotspots/analysis/context.py): celda más cercana,
+# SIN interpolación; cada registro declara distancia al centro de celda y
+# tamaño de celda efectivo en metros. El contexto NO hereda la resolución
+# del punto de detección.
+# ============================================================================
+
+fuentes:
+  - institucion: "Copernicus Climate Change Service / ECMWF"
+    dataset: "reanalysis-era5-land"
+    url_consulta: "https://cds.climate.copernicus.eu/datasets/reanalysis-era5-land"
+    doi: "10.24381/cds.e2161bac"
+    publicacion_referencia: "Muñoz-Sabater et al. 2021, ESSD (ERA5-Land)"
+    licencia: "CC-BY 4.0 (Licence to use Copernicus Products)"
+    cobertura: global
+    historia: "1950-presente (actualización diaria; ~5 días de latencia)"
+    formato: "GRIB (NetCDF vía API)"
+    acceso: "CDS API (requiere cuenta gratuita + clave API; compuerta de credenciales)"
+    estado: investigada
+    fecha_verificacion: "2026-11-11"
+    variables:
+      - variable_id: era5land_t2m
+        nombre: "temperatura del aire a 2 m"
+        producto: "ERA5-Land hourly"
+        unidad: "K"
+        resolucion_espacial: "0.1° x 0.1°"
+        resolucion_espacial_metros: "~9 km (nativa 9 km)"
+        resolucion_temporal: horaria
+        fase_integracion: 1
+      - variable_id: era5land_viento10
+        nombre: "componentes u/v del viento a 10 m"
+        producto: "ERA5-Land hourly"
+        unidad: "m/s"
+        resolucion_espacial: "0.1° x 0.1°"
+        resolucion_espacial_metros: "~9 km"
+        resolucion_temporal: horaria
+        fase_integracion: 1
+      - variable_id: era5land_swvl1
+        nombre: "humedad del suelo volumétrica capa 1 (0-7 cm)"
+        producto: "ERA5-Land hourly"
+        unidad: "m3/m3"
+        resolucion_espacial: "0.1° x 0.1°"
+        resolucion_espacial_metros: "~9 km"
+        resolucion_temporal: horaria
+        fase_integracion: 2
+      - variable_id: era5land_tp
+        nombre: "precipitación total"
+        producto: "ERA5-Land hourly"
+        unidad: "m (acumulado horario)"
+        resolucion_espacial: "0.1° x 0.1°"
+        resolucion_espacial_metros: "~9 km"
+        resolucion_temporal: horaria
+        fase_integracion: 2
+    limitaciones:
+      - "Reanalysis: estimación por modelo forzada con observaciones, NO observación directa; la incertidumbre crece hacia el pasado."
+      - "9 km NO resuelve valles ni bordes de masa forestal: el valor es de la celda, no del punto de detección."
+      - "Requiere credenciales CDS (cuenta gratuita): la descarga queda tras compuerta de autorización."
+
+  - institucion: "UCSB Climate Hazards Center"
+    dataset: "CHIRPS v2.0 daily"
+    url_consulta: "https://www.chc.ucsb.edu/data/chirps"
+    licencia: "uso libre con atribución (CHIRPS v2; verificar texto exacto al integrar)"
+    cobertura: "cuasi-global 50S-50N"
+    historia: "1981-presente (final con ~2-3 semanas de latencia; preliminar antes)"
+    formato: "GeoTIFF/NetCDF por pentada/día; también ERDDAP/IRI Data Library"
+    acceso: "descarga directa HTTP (sin credenciales) o CHC Data API"
+    estado: investigada
+    fecha_verificacion: "2026-11-11"
+    variables:
+      - variable_id: chirps_precip_diaria
+        nombre: "precipitación diaria"
+        producto: "CHIRPS v2.0 daily"
+        unidad: "mm/día"
+        resolucion_espacial: "0.05° x 0.05°"
+        resolucion_espacial_metros: "~5 km"
+        resolucion_temporal: diaria
+        fase_integracion: 1
+      - variable_id: chirps_acumulado_14d
+        nombre: "acumulado 14 días (derivado)"
+        producto: "derivado local de CHIRPS v2.0 daily"
+        unidad: "mm/14d"
+        resolucion_espacial: "0.05° x 0.05°"
+        resolucion_espacial_metros: "~5 km"
+        resolucion_temporal: "diaria (ventana móvil)"
+        fase_integracion: 2
+    limitaciones:
+      - "Producto combinado satélite+estaciones: en el Chaco paraguayo la densidad de estaciones es baja y la incertidumbin es mayor que en el este."
+      - "El acumulado móvil es un DERIVADO nuestro: debe quedar marcado como tal, no como producto CHIRPS."
+
+  - institucion: "ESA (European Space Agency)"
+    dataset: "WorldCover 2021 v200"
+    url_consulta: "https://esa-worldcover.org/en/data-access"
+    publicacion_referencia: "Zanaga et al. 2022 (Zenodo, doi 10.5281/zenodo.7254221)"
+    licencia: "CC BY 4.0"
+    cobertura: global
+    historia: "estática (año 2021); exactitud global reportada 76.7%"
+    formato: "GeoTIFF macrotiles 10 m"
+    acceso: "descarga directa (esa-worldcover.org, ASF, AWS) sin credenciales"
+    estado: investigada
+    fecha_verificacion: "2026-11-11"
+    variables:
+      - variable_id: worldcover_clase_2021
+        nombre: "clase de cobertura del suelo (11 clases FAO-LCCS)"
+        producto: "ESA WorldCover 10 m 2021 v200"
+        unidad: "categoría (código 10-200)"
+        resolucion_espacial: "10 m"
+        resolucion_espacial_metros: "10 m"
+        resolucion_temporal: "estática (2021)"
+        fase_integracion: 1
+    limitaciones:
+      - "Mapa del año 2021: la cobertura PUEDE haber cambiado (deforestación, agricultura); asociar detecciones de 2026 a cobertura 2021 es una aproximación declarada."
+      - "11 clases: 'bosque' agrupa tipos distintos; el nivel de detalle NO permite discriminar, p. ej., especies o estado sucesional."
+
+  - institucion: "NOAA / NASA (GOES-R Series)"
+    dataset: "GOES-16 ABI Fire Detection & Characterization (FDC)"
+    url_consulta: "https://www.earthdata.nasa.gov/news/blog/geostationary-active-fire-detection-data-firms"
+    publicacion_referencia: "Hall et al. 2019 (validación FDC); Schmidt 2020 (algoritmo FDCF)"
+    licencia: "datos NOAA de libre uso (no restringir redistribución; ver condiciones NOAA al integrar)"
+    cobertura: "disco GOES-Este: todo Paraguay visible"
+    historia: "operativo desde 2018; NRT en NASA FIRMS (disponible 2026)"
+    formato: "via FIRMS (CSV/JSON) u óptica GOES"
+    acceso: "NASA FIRMS (MAP_KEY) o NOAA STAR"
+    estado: investigada
+    fecha_verificacion: "2026-11-11"
+    variables:
+      - variable_id: goes16_fdc_deteccion
+        nombre: "detección de fuego geoestacionaria (máscara/FRP)"
+        producto: "GOES-16 ABI L2 FDC (FDCF en FIRMS)"
+        unidad: "binaria / MW"
+        resolucion_espacial: "~2 km (píxel ABI en el subpunto; mayor en Paraguay por ángulo)"
+        resolucion_espacial_metros: "~2-3 km"
+        resolucion_temporal: "10-15 min (full disk/mesoscala)"
+        fase_integracion: 3
+    limitaciones:
+      - "Resolución mucho más gruesa que VIIRS: detecta fuegos más grandes/ persistentes; NO comparable 1:1 con detecciones polares."
+      - "Ángulo de visión desde Paraguay degrada el píxel efectivo (>2 km)."
+      - "Complemento temporal (cadencia), NO sustituto espacial."
+
+  - institucion: "NASA (LP DAAC) — Giglio et al."
+    dataset: "MCD64A1 C6.1"
+    url_consulta: "https://lpdaac.usgs.gov/products/mcd64a1v061/"
+    publicacion_referencia: "Giglio et al. 2021 (User Guide V61; MCD64A1)"
+    licencia: "datos NASA de libre uso (Earthdata)"
+    cobertura: global
+    historia: "mensual desde 2000-11 (C6.1)"
+    formato: "HDF4 tileado (Earthdata); también Planetary Computer"
+    acceso: "Earthdata (requiere cuenta gratuita + token: compuerta de credenciales)"
+    estado: investigada
+    fecha_verificacion: "2026-11-11"
+    variables:
+      - variable_id: mcd64a1_area_quemada
+        nombre: "área quemada mensual"
+        producto: "MCD64A1 C6.1 (MODIS Terra+Aqua)"
+        unidad: "binaria por píxel 500 m (fecha de quema estimada)"
+        resolucion_espacial: "500 m"
+        resolucion_espacial_metros: "500 m"
+        resolucion_temporal: mensual
+        fase_integracion: 2
+    limitaciones:
+      - "Área quemada ≠ detección activa: MCD64A1 es evidencia INDEPENDIENTE a posteriori; útil para validar eventos, no para juntarlos."
+      - "Mensual: la fecha de quema dentro del mes tiene incertidumbre de días."
+      - "500 m subestima fuegos pequeños (<~25 ha sensibles)."
+
+  - institucion: "ESA CCI (Fire Climate Change Initiative)"
+    dataset: "FireCCI51 (MODIS) / FireCCITS11 (Sentinel-3 + MODIS)"
+    url_consulta: "https://climate.esa.int/en/projects/fire/"
+    licencia: "CC BY 4.0 (productos ESA CCI)"
+    cobertura: global
+    historia: "FireCCI51 2001-2020 (completado); FireCCITS11 2016-presente en actualización"
+    formato: "GeoTIFF/NetCDF por tile"
+    acceso: "portal ESA CCI (descarga abierta)"
+    estado: investigada
+    fecha_verificacion: "2026-11-11"
+    variables:
+      - variable_id: firecci51_area_quemada
+        nombre: "área quemada mensual 250 m"
+        producto: "FireCCI51 v5.1"
+        unidad: "binaria por píxel 250 m + día estimado"
+        resolucion_espacial: "250 m"
+        resolucion_espacial_metros: "250 m"
+        resolucion_temporal: mensual
+        fase_integracion: 3
+    limitaciones:
+      - "FireCCI51 termina en 2020: sirve para historia, no para el presente."
+      - "FireCCITS11 (Sentinel-3) más fino pero su serie/versión debe verificarse al integrar."
+
+  - institucion: "Copernicus / JRC (GWIS)"
+    dataset: "Fire Weather Index (FWI) global"
+    url_consulta: "https://gwis.jrc.ec.europa.eu/"
+    licencia: "por verificar al integrar (condiciones Copernicus/JRC)"
+    cobertura: global
+    historia: "operativo (pronóstico + reanálisis)"
+    formato: "raster vía GWIS/CDS"
+    acceso: "web GWIS / CDS"
+    estado: investigada
+    fecha_verificacion: "2026-11-11"
+    variables:
+      - variable_id: fwi_diario
+        nombre: "Fire Weather Index (peligro meteorológico de incendio)"
+        producto: "FWI (ECMWF/GWIS)"
+        unidad: "índice adimensional"
+        resolucion_espacial: "~9-11 km (rejilla del forzante)"
+        resolucion_espacial_metros: "~9-11 km"
+        resolucion_temporal: diaria
+        fase_integracion: 3
+    limitaciones:
+      - "Índice compuesto de peligro METEOROLÓGICO: no detecta fuego ni area quemada; interpreta condiciones propicias."
+      - "Depende de la resolución del reanálisis que lo forzó."
+
+# ============================================================================
+# PLAN DE INTEGRACIÓN POR FASES (justificación en 05_integracion_ambiental.md)
+# Fase 1 (con piloto real): CHIRPS diaria + WorldCover estático + ERA5-Land
+#   t2m/viento → sin credenciales complicadas salvo CDS, licencias claras.
+# Fase 2: ERA5-Land suelo/precipitación + MCD64A1 (validación de eventos).
+# Fase 3: GOES-16 FDC (cadencia) + FireCCI (historia) + FWI (peligro).
+# ============================================================================

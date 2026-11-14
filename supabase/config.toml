@@ -1,0 +1,30 @@
+# Misión 016 — FIREIA LIVE · Configuración de referencia del proyecto Supabase
+# (supabase CLI). El proyecto real se gestiona por Management API;
+# este archivo documenta la configuración esperada.
+
+project_id = "xpegeuamgupnxulosqlu"
+
+[functions.fireia-health]
+verify_jwt = false
+
+[functions.fireia-ingestion-status]
+verify_jwt = false
+
+[functions.fireia-latest-observations]
+verify_jwt = false
+
+[functions.fireia-events]
+verify_jwt = false
+
+[functions.fireia-alerts]
+verify_jwt = false
+
+[functions.fireia-dispatch-ingestion]
+# Autenticación propia vía header x-cron-secret (secreto en Vault).
+verify_jwt = false
+
+# Secretos de funciones (se gestionan por Management API / Vault, NUNCA aquí):
+#   FIREIA_CRON_SECRET        — coordinación cron → dispatch
+#   FIREIA_GH_DISPATCH_TOKEN — token GitHub para workflow_dispatch
+#   SUPABASE_URL              — URL del proyecto (inyectada por el runtime)
+#   SUPABASE_SERVICE_ROLE_KEY — clave de servicio (inyectada por el runtime)

@@ -1,0 +1,120 @@
+# ============================================================================
+# Configuración NO secreta de las fuentes de datos.
+# Las credenciales viven SOLO en variables de entorno (.env) — ver .env.example.
+#
+# Contratos verificados contra la documentación oficial de FIRMS (consultada
+# 2026-11-11, sin consumir la API):
+#   Area API:          /api/area/csv/{MAP_KEY}/{SOURCE}/{west,south,east,north}/{DAY_RANGE}[/{DATE}]
+#                      DAY_RANGE: 1-5 | DATE: YYYY-MM-DD opcional | límite 5000 trans./10 min
+#   Data availability: /api/data_availability/csv/{MAP_KEY}/{SENSOR|ALL}
+#   Missing data:      /api/missing_data/  (tabla HTML; sin contrato CSV documentado —
+#                      se implementa como descarga de página + parseo diferido)
+# ============================================================================
+
+firms_api:
+  base_url: https://firms.modaps.eosdis.nasa.gov
+  day_range_min: 1
+  day_range_max: 5
+  rate_limit_per_10min: 5000
+  products:
+    MODIS_NRT:
+      sensor: MODIS
+      family: modis              # columnas brightness / bright_t31
+      confidence_domain: modis_0_100
+      satellites_expected: [Terra, Aqua]
+      active: true
+    MODIS_SP:
+      sensor: MODIS
+      family: modis
+      confidence_domain: modis_0_100
+      satellites_expected: [Terra, Aqua]
+      active: true
+    VIIRS_SNPP_NRT:
+      sensor: VIIRS
+      family: viirs              # columnas bright_ti4 / bright_ti5
+      confidence_domain: viirs_lnh
+      satellites_expected: [S-NPP]
+      active: false
+      note: "Distribución cesada 2026-11-02 15:40 UTC (NESDIS OSPO). El backfill de S-NPP se hace por el portal de archivo, no por la API. Verificar respuesta del endpoint en Fase 1B."
+    VIIRS_SNPP_SP:
+      sensor: VIIRS
+      family: viirs
+      confidence_domain: viirs_lnh
+      satellites_expected: [S-NPP]
+      active: false
+      note: "Ídem VIIRS_SNPP_NRT: serie cerrada."
+    VIIRS_NOAA20_NRT:
+      sensor: VIIRS
+      family: viirs
+      confidence_domain: viirs_lnh
+      satellites_expected: [NOAA-20]
+      active: true
+    VIIRS_NOAA20_SP:
+      sensor: VIIRS
+      family: viirs
+      confidence_domain: viirs_lnh
+      satellites_expected: [NOAA-20]
+      active: true
+    VIIRS_NOAA21_NRT:
+      sensor: VIIRS
+      family: viirs
+      confidence_domain: viirs_lnh
+      satellites_expected: [NOAA-21]
+      active: true
+    VIIRS_NOAA21_SP:
+      sensor: VIIRS
+      family: viirs
+      confidence_domain: viirs_lnh
+      satellites_expected: [NOAA-21]
+      active: true
+  # Mapeo de la columna `satellite` del CSV de FIRMS.
+  # Códigos de una letra (T/A/N/1/2) verificados contra documentación pública.
+  # NOMBRES COMPLETOS (Terra, Aqua, S-NPP, NOAA-20, NOAA-21): observados en una
+  # respuesta REAL del Area API el 2026-11-10 (validación Misión 007 con
+  # MODIS_NRT: la fila traía satellite="Terra" textual). Se mapean a identidad
+  # para no marcar satellite_code_unmapped en datos reales.
+  satellite_codes:
+    T: Terra
+    A: Aqua
+    N: S-NPP
+    "1": NOAA-20
+    "2": NOAA-21
+    Terra: Terra
+    Aqua: Aqua
+    S-NPP: S-NPP
+    NOAA-20: NOAA-20
+    NOAA-21: NOAA-21
+  instruments: [MODIS, VIIRS]
+
+# ============================================================================
+# ÁREA DE CONSULTA vs TERRITORIO NACIONAL (Misión 005 — separación explícita)
+#
+# - firms_query.bbox es el RECTÁNGULO con el que se piden datos a FIRMS
+#   (Area API). Incluye franjas de Argentina, Brasil y Bolivia POR CONSTRUCCIÓN:
+#   es la única forma de no perder detecciones sobre la frontera. NO es el
+#   territorio nacional y NUNCA debe usarse para decidir pertenencia.
+# - La pertenencia territorial (dentro_pais) la decide EXCLUSIVAMENTE el
+#   polígono ADM0 de la capa geográfica activa (geoBoundaries gbOpen PRY,
+#   geometría DGEEC; ver configs/geo_sources.yaml).
+# - bbox_margin_deg es la tolerancia del chequeo BLANDO de QC
+#   (flag outside_query_bbox): detecta respuestas del proveedor fuera del
+#   rectángulo pedido. No es una frontera ni un criterio territorial.
+# ============================================================================
+firms_query:
+  # Rectángulo de CONSULTA (Fase 0, Entregable 3): W, S, E, N
+  bbox: [-62.7, -27.6, -54.2, -19.3]
+  bbox_margin_deg: 0.5
+
+# DEPRECADO (Misión 005): se mantiene solo para compatibilidad de lectura con
+# configs viejos. Usar firms_query.bbox / firms_query.bbox_margin_deg.
+area:
+  paraguay_bbox: [-62.7, -27.6, -54.2, -19.3]
+  bbox_margin_deg: 0.5
+
+providers:
+  firms:
+    name: NASA FIRMS (LANCE)
+    url: https://firms.modaps.eosdis.nasa.gov
+  earthdata:
+    name: NASA Earthdata Login / CMR / LAADS
+    url: https://urs.earthdata.nasa.gov

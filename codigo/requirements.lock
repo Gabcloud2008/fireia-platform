@@ -1,0 +1,27 @@
+# Dependencias directas — bloqueo de reproducibilidad.
+# Regenerado en la Misión 007 (2026-11-11) y verificado de nuevo en la Misión
+# 008 (2026-11-11) tras la corrección de dependencias y la adición de pruebas
+# del verificador del piloto:
+#   Python 3.12.16 · venv nuevo · suite completa: 218 passed · ruff: limpio.
+# Cambios vs versión anterior:
+#   - pytest==9.2.0 ahora ADMITIDO por pyproject (antes exigía <9: inconsistente).
+#   - httpx añadido: requerido por starlette.testclient (pruebas de la API).
+#   - pydantic/python-dotenv/shapely/uvicorn actualizados a lo efectivamente instalado.
+# Verificado de nuevo en la Misión 009 (2026-11-12): instalación limpia en venv
+# nuevo (pip check OK, 14/14 versiones exactas = este lock) · suite: 221 passed.
+# Verificado de nuevo en la Misión 010 (2026-11-12): venv nuevo desde cero tras
+# la recuperación del entorno (pip install -e ".[api,dev]") · suite: 225 passed
+# (221 + 4 nuevas del orquestador del piloto) · ruff: limpio.
+duckdb==2.0.0
+fastapi==0.162.4
+httpx==0.28.1
+pyarrow==26.0.1
+pydantic==2.14.3
+pytest==9.2.0
+python-dotenv==1.2.4
+PyYAML==6.0.3
+requests==2.34.2
+ruff==0.17.4
+shapely==2.2.0
+starlette==1.10.0
+uvicorn==0.54.0

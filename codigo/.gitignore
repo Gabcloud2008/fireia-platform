@@ -1,0 +1,34 @@
+# Secretos: nunca al repositorio
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+# Datos generados en runtime (se regeneran con la ingesta; los manifests y raw
+# se respaldan por otro medio antes de limpiar)
+data/raw/*
+data/processed/*
+data/manifests/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/manifests/.gitkeep
+*.duckdb
+*.duckdb.wal
+
+# Sistema
+.DS_Store
+
+# Capa geográfica (runtime): fuentes geoBoundaries y capas web derivadas.
+# Se distribuyen por el repo de datos (HF) con su manifiesto; el codigo se
+# re-construye con 'hotspots geo build'.
+data/geo/*
+data/capas/*
+!data/geo/.gitkeep
+!data/capas/.gitkeep
