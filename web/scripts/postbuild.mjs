@@ -8,11 +8,13 @@ import { join } from "node:path";
 const standalone = join(process.cwd(), ".next", "standalone");
 
 function buscarDirWeb(dir) {
-  // busca recursivamente el directorio que contiene server.js bajo standalone
+  // server.js puede quedar en la raíz de standalone (cuando Next detecta el
+  // proyecto como raíz) o anidado según el layout del workspace: se busca
+  // en ambos lugares.
+  if (existsSync(join(dir, "server.js"))) return dir;
   for (const nombre of readdirSync(dir, { withFileTypes: true })) {
     if (!nombre.isDirectory() || nombre.name === "node_modules") continue;
     const ruta = join(dir, nombre.name);
-    if (existsSync(join(ruta, "server.js"))) return ruta;
     const anidado = buscarDirWeb(ruta);
     if (anidado) return anidado;
   }

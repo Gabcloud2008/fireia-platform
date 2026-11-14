@@ -1,0 +1,12 @@
+# Misión 016 — gitleaks: allowlist documentada.
+# Los hallazgos en tests/test_config.py son VALORES SINTÉTICOS de pruebas
+# (p. ej. "SECRETO_SUPER_LARGO_12345", "clave_de_prueba_123"): el test
+# verifica el comportamiento de carga de FIRMS_MAP_KEY desde entorno/archivo.
+# Ninguna credencial real vive en este repositorio (los secretos reales están
+# en GitHub Secrets y Supabase Vault; ver 13_seguridad.md de la Misión 016).
+
+[allowlist]
+  description = "Falsos positivos: fixtures sintéticos de pruebas de configuración"
+  paths = [
+    '''codigo/tests/test_config\.py''',
+  ]
