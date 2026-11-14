@@ -67,13 +67,16 @@ class Supabase:
         r.raise_for_status()
         return r.json()[0] if r.text.strip().startswith("[") else {}
 
-    def insertar(self, tabla: str, filas: list[dict], upsert: bool = False) -> None:
+    def insertar(self, tabla: str, filas: list[dict], on_conflict: str | None = None) -> None:
+        """Inserta filas; con on_conflict hace upsert idempotente (reintentos seguros)."""
         if not filas:
             return
+        url = self._url(tabla)
         headers = dict(self.headers)
-        if upsert:
+        if on_conflict:
+            url += f"?on_conflict={on_conflict}"
             headers["Prefer"] = "resolution=merge-duplicates"
-        r = requests.post(self._url(tabla), headers=headers, json=filas, timeout=60)
+        r = requests.post(url, headers=headers, json=filas, timeout=60)
         r.raise_for_status()
 
     def upsert_salud(self, servicio: str, status: str, **extra: object) -> None:
@@ -269,7 +272,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         "failures": man.get("failures", []),
         "state": estado_cov,
         "obs_count": counts.get("rows_valid"),
-    }])
+    }], on_conflict="run_id,product")
 
     # 3) assets
     import re
@@ -303,7 +306,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         "bytes": man_path.stat().st_size,
         "product": args.product,
     })
-    sb.insertar("fireia_data_assets", assets)
+    sb.insertar("fireia_data_assets", assets, on_conflict="path,run_id")
 
     # 4) ventana móvil de detecciones (desde Parquet, deduplicada por clave natural)
     insertadas = 0
@@ -327,12 +330,13 @@ def cmd_run(args: argparse.Namespace) -> int:
                 "confidence": r.get("confidence"),
                 "bright_ti31": float(r["bright_t31"]) if r.get("bright_t31") is not None else None,
             })
-        sb.insertar("fireia_latest_detections", filas, upsert=True)
+        sb.insertar("fireia_latest_detections", filas,
+                    on_conflict="product,satellite,latitude,longitude,acq_date,acq_time,confidence")
         insertadas = len(filas)
 
     # 5) alertas (sin cambios → sin alertas nuevas)
     alertas = [] if sin_cambios else _evaluar_alertas(sb, args.run_id, args.product, counts, resultado_estado, date.today())
-    sb.insertar("fireia_alerts", alertas)
+    sb.insertar("fireia_alerts", alertas, on_conflict="run_id,rule")
 
     # 6) salud
     sb.upsert_salud("pipeline", "ok" if resultado_estado == "exito" else "degradado",
