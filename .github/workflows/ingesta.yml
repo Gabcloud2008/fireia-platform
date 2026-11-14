@@ -75,8 +75,14 @@ jobs:
       - name: Ingesta (fixture sintético etiquetado)
         if: ${{ env.MODO == 'fixture' }}
         run: |
+          # fixture por familia del producto (taxonomía de configs/sources.yaml)
+          case "$PRODUCTO" in
+            MODIS*) FIXTURE=tests/fixtures/synthetic_modis_nrt.csv ;;
+            *)      FIXTURE=tests/fixtures/synthetic_viirs_noaa20_nrt.csv ;;
+          esac
+          echo "fixture: $FIXTURE (producto: $PRODUCTO)"
           python -m hotspots.cli.app ingest \
-            --fixture tests/fixtures/synthetic_viirs_noaa20_nrt.csv \
+            --fixture "$FIXTURE" \
             --product "$PRODUCTO" \
             --data-dir "$GITHUB_WORKSPACE/datos_run"
 

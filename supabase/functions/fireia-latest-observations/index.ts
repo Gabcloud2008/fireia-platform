@@ -1,7 +1,7 @@
 // Misión 016 — FIREIA LIVE · fireia-latest-observations
 // GET público: detecciones recientes (ventana móvil). Parámetros:
 //   producto=VIIRS_NOAA20_NRT · limite=200 (máx 1000) · dias=7
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { "Content-Type": "application/json; charset=utf-8" } });

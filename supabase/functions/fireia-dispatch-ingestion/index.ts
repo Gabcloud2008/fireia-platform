@@ -6,7 +6,7 @@
 //   4) Responde JSON {data:{run_id,...}} o error clasificado.
 // Autenticación: header x-cron-secret == env FIREIA_CRON_SECRET (Vault/secrets).
 // Nunca registra secretos en logs.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const GH_REPO = "Gabcloud2008/fireia-platform";
 const GH_WORKFLOW = "ingesta.yml";

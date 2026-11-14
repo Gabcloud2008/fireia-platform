@@ -1,6 +1,6 @@
 // Misión 016 — FIREIA LIVE · fireia-events
 // GET público: resúmenes de eventos inferidos (metadatos; el detalle vive en Parquet).
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { "Content-Type": "application/json; charset=utf-8" } });

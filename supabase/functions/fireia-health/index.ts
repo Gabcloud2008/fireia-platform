@@ -1,7 +1,7 @@
 // Misión 016 — FIREIA LIVE · fireia-health
 // GET público: estado del sistema + frescura real de los datos.
 // Honestidad por diseño: reporta antigüedad efectiva, no "tiempo real".
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2";
 
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { "Content-Type": "application/json; charset=utf-8" } });
