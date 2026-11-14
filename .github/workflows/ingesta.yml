@@ -81,10 +81,12 @@ jobs:
             *)      FIXTURE=tests/fixtures/synthetic_viirs_noaa20_nrt.csv ;;
           esac
           echo "fixture: $FIXTURE (producto: $PRODUCTO)"
+          mkdir -p "$GITHUB_WORKSPACE/datos_run"
           python -m hotspots.cli.app ingest \
             --fixture "$FIXTURE" \
             --product "$PRODUCTO" \
-            --data-dir "$GITHUB_WORKSPACE/datos_run"
+            --data-dir "$GITHUB_WORKSPACE/datos_run" \
+            | tee "$GITHUB_WORKSPACE/datos_run/resultado_ingesta.json"
 
       - name: Ingesta REAL desde NASA FIRMS (área Paraguay)
         if: ${{ env.MODO == 'real' }}
@@ -93,7 +95,9 @@ jobs:
         run: |
           ARGS=(--source firms-api --product "$PRODUCTO" --area py --day-range 1 --allow-network --data-dir "$GITHUB_WORKSPACE/datos_run")
           if [ -n "${{ inputs.fecha }}" ]; then ARGS+=(--date "${{ inputs.fecha }}"); fi
-          python -m hotspots.cli.app ingest "${ARGS[@]}"
+          mkdir -p "$GITHUB_WORKSPACE/datos_run"
+          python -m hotspots.cli.app ingest "${ARGS[@]}" \
+            | tee "$GITHUB_WORKSPACE/datos_run/resultado_ingesta.json"
 
       - name: Verificar integridad del almacén (manifiestos vs artefactos)
         run: python -m hotspots.cli.app verify --data-dir "$GITHUB_WORKSPACE/datos_run"

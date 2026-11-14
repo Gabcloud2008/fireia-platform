@@ -60,7 +60,10 @@ Deno.serve(async (req: Request) => {
   let fallos = 0;
 
   for (const p of productos) {
-    const requestKey = `firms|${p.product}|${hoy}|${modo}`;
+    // bucket horario: la ventana NRT se re-adquiere como máximo 1 vez por hora
+    // y producto (el contenido evoluciona; el pipeline deduplica por hash).
+    const bucket = new Date().toISOString().slice(0, 13); // YYYY-MM-DDTHH
+    const requestKey = `firms|${p.product}|${bucket}|${modo}`;
     // idempotencia: si ya existe una corrida igual HOY, no duplicar
     const { data: previa } = await sb
       .from("fireia_ingestion_runs")

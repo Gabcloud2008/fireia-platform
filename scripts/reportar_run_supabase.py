@@ -67,10 +67,13 @@ class Supabase:
         r.raise_for_status()
         return r.json()[0] if r.text.strip().startswith("[") else {}
 
-    def insertar(self, tabla: str, filas: list[dict]) -> None:
+    def insertar(self, tabla: str, filas: list[dict], upsert: bool = False) -> None:
         if not filas:
             return
-        r = requests.post(self._url(tabla), headers=self.headers, json=filas, timeout=60)
+        headers = dict(self.headers)
+        if upsert:
+            headers["Prefer"] = "resolution=merge-duplicates"
+        r = requests.post(self._url(tabla), headers=headers, json=filas, timeout=60)
         r.raise_for_status()
 
     def upsert_salud(self, servicio: str, status: str, **extra: object) -> None:
@@ -198,6 +201,16 @@ def cmd_run(args: argparse.Namespace) -> int:
     sb = Supabase()
     data_dir = Path(args.data_dir)
 
+    # resultado directo de la ingesta (estado, conteos, idempotencia)
+    resultado_path = data_dir / "resultado_ingesta.json"
+    resultado: dict = {}
+    if resultado_path.exists():
+        try:
+            resultado = json.loads(resultado_path.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            resultado = {}
+    sin_cambios = resultado.get("state") == "skipped_already_ingested"
+
     man_path = _ultimo_manifiesto(data_dir)
     if man_path is None:
         sb.parchar_run(args.run_id, {
@@ -209,20 +222,25 @@ def cmd_run(args: argparse.Namespace) -> int:
         return 1
     man = json.loads(man_path.read_text(encoding="utf-8"))
     counts = man.get("counts", {})
+    if sin_cambios:
+        # corrida sin cambios: los conteos del manifiesto viejo NO son de esta
+        # corrida; se reportan 0 con nota idempotente
+        counts = {"rows_raw": 0, "rows_valid": 0, "rows_quarantined": 0}
 
-    resultado = "exito" if args.resultado in ("success", "exito") and man.get("processing_state") == "completed" else (
-        "parcial" if args.resultado in ("success", "exito") else "error"
-    )
+    resultado_estado = "exito" if args.resultado in ("success", "exito") and (
+        man.get("processing_state") == "completed" or sin_cambios
+    ) else ("parcial" if args.resultado in ("success", "exito") else "error")
 
     # 1) corrida
     fila = sb.parchar_run(args.run_id, {
-        "status": resultado,
+        "status": resultado_estado,
         "downloaded": counts.get("rows_raw"),
         "valid": counts.get("rows_valid"),
         "quarantined": counts.get("rows_quarantined"),
-        "manifest": {"manifest_id": man.get("manifest_id"), "result_state": man.get("result_state"),
-                     "artifacts": [{k: a.get(k) for k in ("path", "role", "sha256", "size")}
-                                   for a in man.get("artifacts", [])]},
+        "manifest": ({"manifest_id": man.get("manifest_id"), "result_state": man.get("result_state"),
+                      "idempotente": sin_cambios,
+                      "artifacts": [{k: a.get(k) for k in ("path", "role", "sha256", "size")}
+                                     for a in man.get("artifacts", [])]}),
         "pipeline_version": man.get("schema_version"),
         "workflow_run_url": args.workflow_run_url or None,
         "finished_at": datetime.now(timezone.utc).isoformat(),
@@ -236,15 +254,18 @@ def cmd_run(args: argparse.Namespace) -> int:
             pass
 
     # 2) cobertura
-    estado_cov = "sin_datos" if counts.get("rows_raw", 0) == 0 else (
-        "huecos" if counts.get("rows_quarantined", 0) > 0 else "ok"
-    )
+    if sin_cambios:
+        estado_cov = "sin_cambios"
+    else:
+        estado_cov = "sin_datos" if counts.get("rows_raw", 0) == 0 else (
+            "huecos" if counts.get("rows_quarantined", 0) > 0 else "ok"
+        )
     sb.insertar("fireia_coverage", [{
         "run_id": args.run_id,
         "product": args.product,
         "interval_lo": man.get("acquisition_period", {}).get("from") or args.fecha or str(date.today()),
         "interval_hi": man.get("acquisition_period", {}).get("to") or args.fecha or str(date.today()),
-        "gaps": man.get("gaps", []),
+        "gaps": man.get("gaps", []) if not sin_cambios else [{"sin_cambios": True, "nota": "idempotente: contenido ya ingerido"}],
         "failures": man.get("failures", []),
         "state": estado_cov,
         "obs_count": counts.get("rows_valid"),
@@ -284,10 +305,10 @@ def cmd_run(args: argparse.Namespace) -> int:
     })
     sb.insertar("fireia_data_assets", assets)
 
-    # 4) ventana móvil de detecciones (desde Parquet, tope MAX)
+    # 4) ventana móvil de detecciones (desde Parquet, deduplicada por clave natural)
     insertadas = 0
     pq_path = next((Path(a["path"]) for a in man.get("artifacts", []) if a.get("role") == "observations_parquet"), None)
-    if pq_path and pq_path.exists():
+    if pq_path and pq_path.exists() and not sin_cambios:
         import pyarrow.parquet as pq
         t = pq.read_table(pq_path, columns=["product", "satellite", "latitude", "longitude",
                                             "acq_date", "acq_time", "confidence", "bright_t31"])
@@ -306,21 +327,21 @@ def cmd_run(args: argparse.Namespace) -> int:
                 "confidence": r.get("confidence"),
                 "bright_ti31": float(r["bright_t31"]) if r.get("bright_t31") is not None else None,
             })
-        sb.insertar("fireia_latest_detections", filas)
+        sb.insertar("fireia_latest_detections", filas, upsert=True)
         insertadas = len(filas)
 
-    # 5) alertas
-    alertas = _evaluar_alertas(sb, args.run_id, args.product, counts, resultado, date.today())
+    # 5) alertas (sin cambios → sin alertas nuevas)
+    alertas = [] if sin_cambios else _evaluar_alertas(sb, args.run_id, args.product, counts, resultado_estado, date.today())
     sb.insertar("fireia_alerts", alertas)
 
     # 6) salud
-    sb.upsert_salud("pipeline", "ok" if resultado == "exito" else "degradado",
-                    problem=None if resultado == "exito" else f"última corrida {resultado}",
-                    last_ok_at=datetime.now(timezone.utc).isoformat() if resultado == "exito" else None,
-                    details={"detections_insertadas": insertadas, "modo": args.modo})
+    sb.upsert_salud("pipeline", "ok" if resultado_estado == "exito" else "degradado",
+                    problem=None if resultado_estado == "exito" else f"última corrida {resultado_estado}",
+                    last_ok_at=datetime.now(timezone.utc).isoformat() if resultado_estado == "exito" else None,
+                    details={"detections_insertadas": insertadas, "modo": args.modo, "sin_cambios": sin_cambios})
 
     print(json.dumps({
-        "run_id": args.run_id, "resultado": resultado,
+        "run_id": args.run_id, "resultado": resultado_estado,
         "counts": counts, "estado_cobertura": estado_cov,
         "assets": len(assets), "detecciones_insertadas": insertadas,
         "alertas": len(alertas),
